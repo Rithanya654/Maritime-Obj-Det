@@ -1,152 +1,204 @@
-Maritime Object Detection with YOLOv8
+# Maritime Object Detection with YOLOv8
 
-A production-ready object detection system for maritime environments using YOLOv8-Large, trained on the SeaDronesSee dataset.
-The model achieves 91.1% mAP@50 while maintaining real-time inference performance, enabling reliable detection of swimmers, boats, jetskis, lifesaving appliances, and buoys from aerial drone footage.
+A **production-ready object detection system** for maritime environments using **YOLOv8-Large**, trained on the **SeaDronesSee dataset**.  
+Achieves **91.1% mAP@50** with **real-time inference**, enabling reliable detection of swimmers, boats, jetskis, lifesaving appliances, and buoys from aerial drone footage.
 
-Table of Contents
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Capabilities](#key-capabilities)
+- [Technical Highlights](#technical-highlights)
+- [Performance Metrics](#performance-metrics)
+  - [Overall Performance](#overall-performance)
+  - [Per-Class Performance](#per-class-performance)
+  - [Training Convergence](#training-convergence)
+- [Dataset](#dataset)
+  - [Dataset Specifications](#dataset-specifications)
+  - [Data Processing Pipeline](#data-processing-pipeline)
+  - [Processed Dataset Statistics](#processed-dataset-statistics)
+  - [Class Distribution](#class-distribution)
+- [Installation](#installation)
+  - [System Requirements](#system-requirements)
+  - [Setup Instructions](#setup-instructions)
+  - [Required Dependencies](#required-dependencies)
+  - [Verify Installation](#verify-installation)
+- [Usage](#usage)
+  - [Training](#training)
+  - [Inference](#inference)
+  - [Model Export](#model-export)
+  - [Evaluation](#evaluation)
+- [Model Architecture](#model-architecture)
+- [Training Pipeline](#training-pipeline)
+- [Experimental Results](#experimental-results)
+
+---
 
-Overview
+## Overview
 
-Key Capabilities
+This project was developed during an internship to implement a **state-of-the-art maritime surveillance system** using **YOLOv8-Large**.
 
-Technical Highlights
+The system is optimized for **real-world deployment**, handling:
+- Small object detection (swimmers, buoys)
+- High-resolution aerial imagery
+- Occlusions and boundary artifacts
+- Class imbalance common in maritime datasets
+
+### Application Areas
 
-Performance Metrics
+- **Search and Rescue Operations**  
+  Rapid detection of swimmers and lifesaving equipment.
 
-Overall Performance
+- **Maritime Surveillance**  
+  Automated monitoring of boats and jetskis from UAV footage.
 
-Per-Class Performance
+- **Beach Safety**  
+  Real-time swimmer tracking for public safety.
 
-Training Convergence
+- **Marine Research**  
+  Automated object counting and analytics.
 
-Dataset
+---
 
-Dataset Specifications
+## Key Capabilities
 
-Data Processing Pipeline
+- **High Accuracy**
+  - mAP@50: **91.1%**
+  - Precision: **91.2%**
+  - Recall: **89.5%**
 
-Processed Dataset Statistics
+- **Real-Time Performance**
+  - ~45 ms per image (640×640) on NVIDIA T4 GPU
 
-Class Distribution
+- **Production Ready**
+  - Optimized hyperparameters
+  - Early stopping and checkpointing
+  - Fully reproducible training pipeline
 
-Installation
+- **Scalable Data Processing**
+  - COCO → YOLO conversion
+  - High-resolution image tiling
+  - Automated label validation
 
-System Requirements
+---
 
-Setup Instructions
+## Technical Highlights
 
-Required Dependencies
+- Overlap-based **image tiling** to preserve boundary objects
+- Automated **corrupt label detection and removal**
+- Maritime-aware augmentations (no vertical flips or perspective warp)
+- Anchor-free YOLOv8 detection head
+- Cosine annealing learning rate schedule
+- Multi-version experimental evaluation
 
-Verify Installation
+---
 
-Usage
+## Performance Metrics
 
-Training
+### Overall Performance
 
-Inference
+| Metric | Value |
+|------|------|
+| mAP@50 | **91.1%** |
+| mAP@50–95 | 58.7% |
+| Precision | 91.2% |
+| Recall | 89.5% |
+| Inference Time | ~45 ms / image |
+| Model Size | 87.7 MB |
 
-Model Export
+---
 
-Evaluation
+### Per-Class Performance
 
-Model Architecture
+| Class | Precision | Recall | mAP@50 | Val Instances |
+|------|----------|--------|-------|---------------|
+| Swimmer | 88% | 82% | 85% | 3,245 |
+| Boat | 93% | 92% | 94% | 7,892 |
+| Jetski | 91% | 90% | 92% | 1,456 |
+| Lifesaving Appliance | 87% | 84% | 86% | 2,134 |
+| Buoy | 89% | 87% | 88% | 2,176 |
 
-YOLOv8-Large Specifications
+---
 
-Feature Extraction Hierarchy
+### Training Convergence
 
-Training Pipeline
+| Epoch | mAP@50 | Improvement |
+|------|-------|------------|
+| 1 | 75.6% | Baseline |
+| 5 | 87.7% | +12.1% |
+| 10 | 89.5% | +1.8% |
+| 15 | 90.6% | +1.1% |
+| 20 | **91.1%** | +0.5% |
 
-Data Processing Workflow
+---
 
-Training Configuration
+## Dataset
 
-Training Hardware Specifications
+### Dataset Specifications
 
-Learning Rate Schedule
+| Attribute | Value |
+|---------|------|
+| Source | SeaDronesSee (University of Tübingen) |
+| Total Images | 54,000+ |
+| Classes | 5 |
+| Resolution | 720p – 4K |
+| Annotation Format | COCO JSON |
+| Train / Val Split | 80 / 20 |
 
-Loss Functions
+---
 
-Experimental Results
+### Data Processing Pipeline
 
-Overview
+1. **COCO → YOLO Conversion**
+2. **Image Tiling (1024×1024, 256px overlap)**
+3. **Label Validation & Cleanup**
+4. **Dataset Verification & Statistics**
 
-This project was developed during an internship to build a state-of-the-art maritime surveillance system capable of detecting critical objects in complex ocean environments using YOLOv8-Large.
+---
 
-The system is optimized for real-world deployment, handling challenges such as:
+### Processed Dataset Statistics
 
-Small object detection (swimmers, buoys)
+| Split | Original Images | Tiles | Objects | Avg Objects / Tile |
+|-----|----------------|------|--------|--------------------|
+| Train | 43,264 | 38,080 | 67,603 | 1.77 |
+| Val | 10,736 | 6,590 | 16,903 | 2.56 |
+| **Total** | 54,000 | 44,670 | 84,506 | 1.89 |
 
-High-resolution aerial imagery
+---
 
-Occlusions and boundary objects
+### Class Distribution
 
-Class imbalance in maritime datasets
+| Class | Train | Val | Total | Percentage |
+|-----|------|-----|------|-----------|
+| Boat | 31,568 | 7,892 | 39,460 | 46.7% |
+| Swimmer | 12,980 | 3,245 | 16,225 | 19.2% |
+| Buoy | 8,704 | 2,176 | 10,880 | 12.9% |
+| Lifesaving Appliance | 8,536 | 2,134 | 10,670 | 12.6% |
+| Jetski | 5,824 | 1,456 | 7,280 | 8.6% |
 
-Application Areas
+---
 
-Search and Rescue Operations
-Rapid detection of swimmers and lifesaving equipment in emergency scenarios.
+## Installation
 
-Maritime Surveillance
-Automated monitoring of boats, jetskis, and marine traffic from UAVs.
+### System Requirements
 
-Beach Safety Systems
-Real-time tracking of swimmers and water activities to enhance public safety.
+- Python ≥ 3.8
+- CUDA ≥ 11.0
+- 16GB+ RAM
+- 50GB+ Disk
+- GPU with ≥ 8GB VRAM
 
-Marine Research & Analytics
-Automated detection and counting of maritime objects for large-scale studies.
+---
 
-This repository provides a fully reproducible pipeline, covering dataset preprocessing, training, evaluation, inference, and deployment-ready exports.
+### Setup Instructions
 
-Key Capabilities
+```bash
+git clone https://github.com/company/maritime-object-detection.git
+cd maritime-object-detection
 
-High Accuracy
+conda create -n maritime python=3.8
+conda activate maritime
 
-91.1% mAP@50
-
-91.2% Precision
-
-89.5% Recall
-
-Real-Time Performance
-
-~45 ms inference per 640×640 image on NVIDIA T4 GPU
-
-Production-Ready Training
-
-Optimized hyperparameters
-
-Early stopping and checkpointing
-
-Extensive validation and testing
-
-Scalable Data Pipeline
-
-COCO → YOLO conversion
-
-High-resolution image tiling with overlap
-
-Automated label validation and cleanup
-
-Experimentally Verified
-
-Multiple training versions
-
-Resolution comparison studies
-
-Detailed performance logs
-
-Technical Highlights
-
-Smart image tiling with overlap handling to avoid boundary detection loss
-
-Robust label validation to eliminate corrupt annotations
-
-Maritime-specific augmentation strategy (no vertical flips or perspective distortion)
-
-Anchor-free detection with YOLOv8 decoupled head
-
-Cosine annealing learning rate with warm-up
-
-Extensive experimental comparisons (v1.0 – v3.0)
+pip install torch==2.0.0 torchvision==0.15.0 --index-url https://download.pytorch.org/whl/cu118
+pip install -r requirements.txt

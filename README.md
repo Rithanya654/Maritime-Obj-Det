@@ -19,11 +19,6 @@ Achieves **91.1% mAP@50** with **real-time inference**, enabling reliable detect
   - [Data Processing Pipeline](#data-processing-pipeline)
   - [Processed Dataset Statistics](#processed-dataset-statistics)
   - [Class Distribution](#class-distribution)
-- [Installation](#installation)
-  - [System Requirements](#system-requirements)
-  - [Setup Instructions](#setup-instructions)
-  - [Required Dependencies](#required-dependencies)
-  - [Verify Installation](#verify-installation)
 - [Usage](#usage)
   - [Training](#training)
   - [Inference](#inference)
@@ -87,7 +82,7 @@ The system is optimized for **real-world deployment**, handling:
 
 - Overlap-based **image tiling** to preserve boundary objects
 - Automated **corrupt label detection and removal**
-- Maritime-aware augmentations (no vertical flips or perspective warp)
+- Maritime-aware augmentations (no vertical flips or perspective distortion)
 - Anchor-free YOLOv8 detection head
 - Cosine annealing learning rate schedule
 - Multi-version experimental evaluation
@@ -150,10 +145,19 @@ The system is optimized for **real-world deployment**, handling:
 
 ### Data Processing Pipeline
 
-1. **COCO → YOLO Conversion**
-2. **Image Tiling (1024×1024, 256px overlap)**
-3. **Label Validation & Cleanup**
-4. **Dataset Verification & Statistics**
+The dataset undergoes a **four-stage preprocessing workflow** to ensure high-quality training data:
+
+1. **COCO → YOLO Conversion**  
+   Converts annotations to YOLO format with class remapping.
+
+2. **Image Tiling**  
+   Large images are split into 1024×1024 tiles with 256px overlap.
+
+3. **Label Validation & Cleanup**  
+   Removes corrupt labels and invalid bounding boxes.
+
+4. **Dataset Verification**  
+   Final integrity checks and dataset statistics generation.
 
 ---
 
@@ -179,26 +183,84 @@ The system is optimized for **real-world deployment**, handling:
 
 ---
 
-## Installation
+## Usage
 
-### System Requirements
+### Training
 
-- Python ≥ 3.8
-- CUDA ≥ 11.0
-- 16GB+ RAM
-- 50GB+ Disk
-- GPU with ≥ 8GB VRAM
+The training pipeline performs:
+- Dataset preprocessing
+- Model initialization with YOLOv8-Large
+- Optimized training with early stopping
+- Automatic checkpoint saving
+
+Training was conducted for **20 epochs**, with the best model selected based on validation mAP@50.
 
 ---
 
-### Setup Instructions
+### Inference
 
-```bash
-git clone https://github.com/company/maritime-object-detection.git
-cd maritime-object-detection
+The trained model supports:
+- Single image inference
+- Batch image inference
+- Video and real-time stream processing
 
-conda create -n maritime python=3.8
-conda activate maritime
+Inference parameters such as confidence threshold, IOU threshold, and class filtering can be customized.
 
-pip install torch==2.0.0 torchvision==0.15.0 --index-url https://download.pytorch.org/whl/cu118
-pip install -r requirements.txt
+---
+
+### Model Export
+
+The trained model can be exported to multiple deployment formats:
+- ONNX
+- TensorRT
+- TorchScript
+- CoreML
+
+This enables deployment across cloud, edge, and mobile platforms.
+
+---
+
+### Evaluation
+
+Model evaluation is performed using:
+- mAP@50
+- mAP@50–95
+- Precision
+- Recall
+
+Validation is conducted on a held-out 20% split of the dataset.
+
+---
+
+## Model Architecture
+
+The system is based on **YOLOv8-Large**, featuring:
+- CSPDarknet backbone with C2f modules
+- PAN neck for multi-scale feature aggregation
+- Decoupled, anchor-free detection head
+
+This architecture enables accurate detection of both **small objects** (swimmers, buoys) and **large objects** (boats).
+
+---
+
+## Training Pipeline
+
+The training pipeline integrates:
+- Automated preprocessing
+- Cosine learning rate scheduling with warmup
+- AdamW optimizer
+- Mixed precision training (AMP)
+
+The pipeline is optimized for stability, convergence speed, and generalization.
+
+---
+
+## Experimental Results
+
+| Version | Resolution | Epochs | Best Epoch | mAP@50 | Precision | Recall | Status |
+|-------|-----------|--------|-----------|-------|----------|-------|--------|
+| v1.0 | 640×640 | 20 | 20 | **91.1%** | 91.2% | 89.5% | Production |
+| v2.0 | 640×640 | 40 | 29 | 91.1% | 91.2% | 89.5% | Discontinued |
+| v3.0 | 1024×1024 | 25 | 13 | 89.2% | 88.8% | 87.1% | Failed |
+
+**v1.0 was selected as the final production model due to the optimal accuracy–speed tradeoff.**
